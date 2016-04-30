@@ -25,6 +25,7 @@ def dataNetwork():
     return netdata.packets_sent + netdata.packets_recv
 
 def dataNetworkHandler():
+    global idDevice 
     idDevice = GetMACAddress() # Make this a global variable
     
     mqttclient = paho.Client()
@@ -34,7 +35,8 @@ def dataNetworkHandler():
     while True:
         packets = dataNetwork()    
     	message = idDevice + " " + str(packets)
-    	print "dataNetworkHandler " + message
+    	pdb.set_trace()
+        print "dataNetworkHandler " + message
     	mqttclient.publish("IoT101/"+idDevice+"/Network", message)
     	time.sleep(1)
 
@@ -52,12 +54,9 @@ def dataMessageHandler():
         pass
 
     while True:
-        print "Hello Internet of Things 101"
+        print "Data Message Handler"
         time.sleep(5)
 
-
-
-#dataNetworkHandler()
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, interruptHandler)
@@ -69,7 +68,7 @@ if __name__ == '__main__':
     threadx.start()
 
     while True:
-        print "Hello Internet of Things 101"
+        print "Main - Hello Internet of Things 101"
         time.sleep(5)
 
 

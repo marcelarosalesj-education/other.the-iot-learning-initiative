@@ -1,0 +1,7 @@
+comandos de linux
+
+Para ver los procesos que estan leyendo el puerto 8000.
+lsof -i :8000
+
+
+

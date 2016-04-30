@@ -2,12 +2,40 @@
 
 import paho.mqtt.client as paho
 import psutil
+import pywapi
 import signal
 import sys
 import time
+from time import gmtime, strftime
+#import socket
 import pdb
 from threading import Thread
+
+import dweepy
+
 from uuid import getnode as get_mac
+
+import plotly.plotly as py
+from plotly.graph_objs import Scatter, Layout, Figure
+username = 'marcelarosalesj'
+api_key = 'twr0hlw78c'
+stream_token = '2v04m1lk1x'
+
+from flask import Flask
+from flask_restful import Api, Resource
+
+app = Flask(__name__)
+api = Api(app)
+
+#ip = socket.gethostbyname(socket.gethostname())
+
+class Network(Resource):
+    def get(self):
+        data = strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " - "+ message
+        return data
+
+api.add_resource(Network, '/network')
+
 
 def interruptHandler(signal, frame):
     sys.exit(0)
@@ -27,18 +55,23 @@ def dataNetwork():
 def dataNetworkHandler():
     global idDevice 
     idDevice = GetMACAddress() # Make this a global variable
-    
     mqttclient = paho.Client()
     mqttclient.on_publish = on_publish
-    mqttclient.connect("test.mosquitto.org", 1883, 60)
+    try:
+        mqttclient.connect("test.mosquitto.org", 1883, 60)
+    except:
+        print "Lost connection... Please reconnect."
 
     while True:
         packets = dataNetwork()    
-    	message = idDevice + " " + str(packets)
-    	pdb.set_trace()
+    	global message 
+        message = idDevice + " " + str(packets)
+    	#pdb.set_trace()
         print "dataNetworkHandler " + message
     	mqttclient.publish("IoT101/"+idDevice+"/Network", message)
-    	time.sleep(1)
+    	json = {'id':idDevice,'packets':int(packets)}
+        dweepy.dweet_for('DataReportingSystem',json)
+        time.sleep(1)
 
 
 def on_message(mosq, obj, msg):
@@ -49,7 +82,6 @@ def dataMessageHandler():
     mqttclient.on_message = on_message
     mqttclient.connect("test.mosquitto.org", 1883, 60)
     mqttclient.subscribe("IoT101/"+idDevice+"/Message", 0)
-
     while mqttclient.loop() == 0:
         pass
 
@@ -66,6 +98,8 @@ if __name__ == '__main__':
 
     threadx = Thread(target=dataMessageHandler)
     threadx.start()
+
+    app.run(host = '0.0.0.0', debug=True)
 
     while True:
         print "Main - Hello Internet of Things 101"

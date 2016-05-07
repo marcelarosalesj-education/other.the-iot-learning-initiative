@@ -12,13 +12,13 @@ static int module_init_function(void)
 
 static void module_exit_function(void)
 {
-    printk(KERN_INFO "Module? Bye!\n");
+    printk(KERN_INFO "Module? Bye %s !\n", myname);
 }
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("xe1gyq");
 MODULE_DESCRIPTION("My First Linux Kernel Module");
-MODULE_PARM(myname, "s");
+module_param(myname, charp, 0);
 
 module_init(module_init_function);
 module_exit(module_exit_function);
